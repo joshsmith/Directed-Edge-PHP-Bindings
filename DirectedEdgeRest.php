@@ -51,6 +51,23 @@ class DirectedEdgeRest
   }
 
   /**
+   * Adds an item with a link and weight
+   * @param string $item_id Item ID
+   * @param string $link_name Link Name
+   * @param int $weight Weight for link, from 1 to 10
+   * @param string $type Type of link
+   *
+   * @return bool True if add succeeded, false otherwise
+   */
+  public function addItemWithLinkAndWeightOfType($item_id, $link_name, $weight, $type)
+  {
+    $xml = self::XMLForItemWithLinkAndWeightOfType($item_id, $link_name, $weight, $type);
+    if(self::addNewItem($item_id, $xml)) {
+      return true;
+    }
+  }
+  
+  /**
    * Updates an item with a tag
    * @param string $item_id Item ID
    * @param string $tag_name Tag Name
@@ -108,7 +125,6 @@ class DirectedEdgeRest
   public function updateItemWithLinkAndWeightOfType($item_id, $link_name, $weight, $type)
   {
     $xml = self::XMLForItemWithLinkAndWeightOfType($item_id, $link_name, $weight, $type);
-    var_dump($xml);
     if(self::updateItemAdd($item_id, $xml)) {
       return true;
     }
