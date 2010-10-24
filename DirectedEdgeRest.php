@@ -97,6 +97,24 @@ class DirectedEdgeRest
   }
 
   /**
+   * Updates an item with a link and weight
+   * @param string $item_id Item ID
+   * @param string $link_name Link Name
+   * @param int $weight Weight for item, from 1 to 10
+   * @param string $type Type of link
+   *
+   * @return bool True if add succeeded, false otherwise
+   */
+  public function updateItemWithLinkAndWeightOfType($item_id, $link_name, $weight, $type)
+  {
+    $xml = self::XMLForItemWithLinkAndWeightOfType($item_id, $link_name, $weight, $type);
+    var_dump($xml);
+    if(self::updateItemAdd($item_id, $xml)) {
+      return true;
+    }
+  }
+
+  /**
    * Removes a tag from an item
    * @param string $item_id Item ID
    * @param string $tag_name Tag Name
@@ -429,6 +447,44 @@ class DirectedEdgeRest
     
     // Set the weight value
     $attr->appendChild($this->doc->createTextNode($weight));
+
+    $this->root->appendChild($item);
+
+    $xml = $this->doc->saveXML();
+    return $xml;
+  }
+
+  /**
+   * Generates XML for an item with a link and weight
+   * @param string $item_id Item ID
+   * @param string $link_name Link Name
+   * @param int $weight Weight, any number from 1 to 10
+   * @param string $type Type of link
+   *
+   * @return string XML
+   */  
+  private function XMLForItemWithLinkAndWeightOfType($item_id, $link_name, $weight, $type)
+  {
+    self::createNewDOMDocument();
+    $item = self::createItemElement($item_id);
+
+    $link = $this->doc->createElement("link");
+    $link->appendChild($this->doc->createTextNode($link_name));
+    $root = $item->appendChild($link);
+    
+    // Create the "weight" attribute
+    $attr = $link->appendChild($this->doc->createAttribute('weight'));    
+    $link->appendChild($attr);
+    
+    // Set the weight value
+    $attr->appendChild($this->doc->createTextNode($weight));
+
+    // Create the "weight" attribute
+    $attr2 = $link->appendChild($this->doc->createAttribute('type'));    
+    $link->appendChild($attr2);
+    
+    // Set the weight value
+    $attr2->appendChild($this->doc->createTextNode($type));
 
     $this->root->appendChild($item);
 
