@@ -3,7 +3,187 @@
 require_once('config.php');
 
 class DirectedEdgeRest
-{  
+{
+  /**
+   * Adds an item with a tag
+   * @param string $item_id Item ID
+   * @param string $tag_name Tag Name
+   *
+   * @return bool True if add succeeded, false otherwise
+   */
+  public function addItemWithTag($item_id, $tag_name)
+  {
+    $xml = self::XMLForItemWithTag($item_id, $tag_name);
+    if(self::addNewItem($item_id, $xml)) {
+      return true;
+    }
+  }
+  
+  /**
+   * Adds an item with a link
+   * @param string $item_id Item ID
+   * @param string $link_name Link Name
+   *
+   * @return bool True if add succeeded, false otherwise
+   */
+  public function addItemWithLink($item_id, $link_name)
+  {
+    $xml = self::XMLForItemWithLink($item_id, $link_name);
+    if(self::addNewItem($item_id, $xml)) {
+      return true;
+    }
+  }
+  
+  /**
+   * Adds an item with a link and weight
+   * @param string $item_id Item ID
+   * @param string $link_name Link Name
+   * @param int $weight Weight for link, from 1 to 10
+   *
+   * @return bool True if add succeeded, false otherwise
+   */
+  public function addItemWithLinkAndWeight($item_id, $link_name, $weight)
+  {
+    $xml = self::XMLForItemWithLinkAndWeight($item_id, $link_name, $weight);
+    if(self::addNewItem($item_id, $xml)) {
+      return true;
+    }
+  }
+
+  /**
+   * Updates an item with a tag
+   * @param string $item_id Item ID
+   * @param string $tag_name Tag Name
+   *
+   * @return bool True if add succeeded, false otherwise
+   */
+  public function updateItemWithTag($item_id, $tag_name)
+  {
+    $xml = self::XMLForItemWithTag($item_id, $tag_name);
+    if(self::updateItemAdd($item_id, $xml)) {
+      return true;
+    }  
+  }
+
+  /**
+   * Updates an item with a link
+   * @param string $item_id Item ID
+   * @param string $link_name Link Name
+   *
+   * @return bool True if add succeeded, false otherwise
+   */
+  public function updateItemWithLink($item_id, $link_name)
+  {
+    $xml = self::XMLForItemWithLink($item_id, $link_name);
+    if(self::updateItemAdd($item_id, $xml)) {
+      return true;
+    }  
+  }
+
+  /**
+   * Updates an item with a link and weight
+   * @param string $item_id Item ID
+   * @param string $link_name Link Name
+   * @param int $weight Weight for item, from 1 to 10
+   *
+   * @return bool True if add succeeded, false otherwise
+   */
+  public function updateItemWithLinkAndWeight($item_id, $link_name, $weight)
+  {
+    $xml = self::XMLForItemWithLinkAndWeight($item_id, $link_name, $weight);
+    if(self::updateItemAdd($item_id, $xml)) {
+      return true;
+    }
+  }
+
+  /**
+   * Removes a tag from an item
+   * @param string $item_id Item ID
+   * @param string $tag_name Tag Name
+   *
+   * @return bool True if removal succeeded, false otherwise
+   */
+  public function removeTagFromItem($item_id, $tag_name)
+  {
+    $xml = self::XMLForItemWithTag($item_id, $tag_name);
+    if(self::updateItemRemove($item_id, $xml)) {
+      return true;
+    }
+  }
+    
+  /**
+   * Removes a link from an item
+   * @param string $item_id Item ID
+   * @param string $link_name Link Name
+   *
+   * @return bool True if removal succeeded, false otherwise
+   */
+  public function removeLinkFromItem($item_id, $link_name)
+  {
+    $xml = self::XMLForItemWithLink($item_id, $link_name);
+    if(self::updateItemRemove($item_id, $xml)) {
+      return true;
+    }
+  }
+  
+  /**
+   * Deletes an item entirely
+   * @param string $item_id Item ID
+   *
+   * @return bool True if deletion succeeded, false otherwise
+   */
+  public function deleteItem($item_id)
+  {
+    if(self::removeItem($item_id)) {
+      return true;
+    }
+  }
+  
+    
+  /**
+   * Returns array of recommended result IDs for an item
+   * @param string $item Item, e.g. "Miles%20Davis"
+   * @param string $tags Tags as comma delimited string, e.g. "product,page"
+   * @param int $limit Limit for max results
+   *
+   * @return array Recommended result IDs
+   */
+  public function getRecommended($item, $tags, $limit)
+  {
+    // Connect to Directed Edge and parse the returned XML
+    $targeturl = self::buildURL($item, 'recommended', $tags, $limit, 'true');
+    $response = self::getCurlResponse($targeturl);
+    $xml = self::parseXML($response);
+    
+    // Iterate through the XML and place IDs into an array
+    foreach($xml->item->recommended as $recommended) {
+      $recommendedResults[] = filter_var($recommended, FILTER_SANITIZE_NUMBER_INT);
+    }
+    return $recommendedResults;
+  }
+
+  /**
+   * Returns array of related result IDs for an item
+   * @param string $item Item, e.g. "Miles%20Davis"
+   * @param string $tags Tags as comma delimited string, e.g. "product,page"
+   * @param int $limit Limit for max results
+   *
+   * @return array Recommended result IDs
+   */
+  public function getRelated($item, $tags, $limit)
+  {
+    // Connect to Directed Edge and parse the returned XML
+    $targeturl = self::buildURL($item, 'related', $tags, $limit, 'false');
+    $response = self::getCurlResponse($targeturl);
+    $xml = self::parseXML($response);
+
+    // Iterate through the XML and place IDs into an array
+    foreach($xml->item->related as $related) {
+      $relatedResults[] = filter_var($related, FILTER_SANITIZE_NUMBER_INT);
+    }
+    return $relatedResults;
+  }
+    
   /**
    * Builds URL for cURL
    * @param string $item Item, e.g. "Miles%20Davis"
@@ -335,185 +515,5 @@ class DirectedEdgeRest
     if(self::deleteCurl($targeturl)) {
       return true;
     }
-  }
-    
-  /**
-   * Adds an item with a tag
-   * @param string $item_id Item ID
-   * @param string $tag_name Tag Name
-   *
-   * @return bool True if add succeeded, false otherwise
-   */
-  public function addItemWithTag($item_id, $tag_name)
-  {
-    $xml = self::XMLForItemWithTag($item_id, $tag_name);
-    if(self::addNewItem($item_id, $xml)) {
-      return true;
-    }
-  }
-  
-  /**
-   * Adds an item with a link
-   * @param string $item_id Item ID
-   * @param string $link_name Link Name
-   *
-   * @return bool True if add succeeded, false otherwise
-   */
-  public function addItemWithLink($item_id, $link_name)
-  {
-    $xml = self::XMLForItemWithLink($item_id, $link_name);
-    if(self::addNewItem($item_id, $xml)) {
-      return true;
-    }
-  }
-  
-  /**
-   * Adds an item with a link and weight
-   * @param string $item_id Item ID
-   * @param string $link_name Link Name
-   * @param int $weight Weight for link, from 1 to 10
-   *
-   * @return bool True if add succeeded, false otherwise
-   */
-  public function addItemWithLinkAndWeight($item_id, $link_name, $weight)
-  {
-    $xml = self::XMLForItemWithLinkAndWeight($item_id, $link_name, $weight);
-    if(self::addNewItem($item_id, $xml)) {
-      return true;
-    }
-  }
-
-  /**
-   * Updates an item with a tag
-   * @param string $item_id Item ID
-   * @param string $tag_name Tag Name
-   *
-   * @return bool True if add succeeded, false otherwise
-   */
-  public function updateItemWithTag($item_id, $tag_name)
-  {
-    $xml = self::XMLForItemWithTag($item_id, $tag_name);
-    if(self::updateItemAdd($item_id, $xml)) {
-      return true;
-    }  
-  }
-
-  /**
-   * Updates an item with a link
-   * @param string $item_id Item ID
-   * @param string $link_name Link Name
-   *
-   * @return bool True if add succeeded, false otherwise
-   */
-  public function updateItemWithLink($item_id, $link_name)
-  {
-    $xml = self::XMLForItemWithLink($item_id, $link_name);
-    if(self::updateItemAdd($item_id, $xml)) {
-      return true;
-    }  
-  }
-
-  /**
-   * Updates an item with a link and weight
-   * @param string $item_id Item ID
-   * @param string $link_name Link Name
-   * @param int $weight Weight for item, from 1 to 10
-   *
-   * @return bool True if add succeeded, false otherwise
-   */
-  public function updateItemWithLinkAndWeight($item_id, $link_name, $weight)
-  {
-    $xml = self::XMLForItemWithLinkAndWeight($item_id, $link_name, $weight);
-    if(self::updateItemAdd($item_id, $xml)) {
-      return true;
-    }
-  }
-
-  /**
-   * Removes a tag from an item
-   * @param string $item_id Item ID
-   * @param string $tag_name Tag Name
-   *
-   * @return bool True if removal succeeded, false otherwise
-   */
-  public function removeTagFromItem($item_id, $tag_name)
-  {
-    $xml = self::XMLForItemWithTag($item_id, $tag_name);
-    if(self::updateItemRemove($item_id, $xml)) {
-      return true;
-    }
-  }
-    
-  /**
-   * Removes a link from an item
-   * @param string $item_id Item ID
-   * @param string $link_name Link Name
-   *
-   * @return bool True if removal succeeded, false otherwise
-   */
-  public function removeLinkFromItem($item_id, $link_name)
-  {
-    $xml = self::XMLForItemWithLink($item_id, $link_name);
-    if(self::updateItemRemove($item_id, $xml)) {
-      return true;
-    }
-  }
-  
-  /**
-   * Deletes an item entirely
-   * @param string $item_id Item ID
-   *
-   * @return bool True if deletion succeeded, false otherwise
-   */
-  public function deleteItem($item_id)
-  {
-    if(self::removeItem($item_id)) {
-      return true;
-    }
-  }
-  
-    
-  /**
-   * Returns array of recommended result IDs for an item
-   * @param string $item Item, e.g. "Miles%20Davis"
-   * @param string $tags Tags as comma delimited string, e.g. "product,page"
-   * @param int $limit Limit for max results
-   *
-   * @return array Recommended result IDs
-   */
-  public function getRecommended($item, $tags, $limit)
-  {
-    // Connect to Directed Edge and parse the returned XML
-    $targeturl = self::buildURL($item, 'recommended', $tags, $limit, 'true');
-    $response = self::getCurlResponse($targeturl);
-    $xml = self::parseXML($response);
-    
-    // Iterate through the XML and place IDs into an array
-    foreach($xml->item->recommended as $recommended) {
-      $recommendedResults[] = filter_var($recommended, FILTER_SANITIZE_NUMBER_INT);
-    }
-    return $recommendedResults;
-  }
-
-  /**
-   * Returns array of related result IDs for an item
-   * @param string $item Item, e.g. "Miles%20Davis"
-   * @param string $tags Tags as comma delimited string, e.g. "product,page"
-   * @param int $limit Limit for max results
-   *
-   * @return array Recommended result IDs
-   */
-  public function getRelated($item, $tags, $limit)
-  {
-    // Connect to Directed Edge and parse the returned XML
-    $targeturl = self::buildURL($item, 'related', $tags, $limit, 'false');
-    $response = self::getCurlResponse($targeturl);
-    $xml = self::parseXML($response);
-
-    // Iterate through the XML and place IDs into an array
-    foreach($xml->item->related as $related) {
-      $relatedResults[] = filter_var($related, FILTER_SANITIZE_NUMBER_INT);
-    }
-    return $relatedResults;
   }
 }
