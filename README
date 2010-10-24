@@ -1,0 +1,15 @@
+This isn't much of a README yet.
+
+First, you're just going to want to set the global variables in config.php to your Directed Edge username and password.
+
+After that, take a look through the functions in DirectedEdgeRest.php. The majority of the file is made up of private functions that handle, among other things, cURL, XML parsing/traversal, and XML writing.
+
+The public functions are your interface to the API. They're intended to be abstract enough so that you're not rewriting a function that does something as simple as an incremental update to Directed Edge's database for items as diverse as, say, users and questions.
+
+The bindings were built to be used with any database, but follows the general framework laid out in Directed Edge's own documentation. IDs are used and prefixed by an identifying word, e.g. "user1". You can, however, use whatever works for you and feel free to modify to your own needs.
+
+Please do get in touch if you'd like to contribute to this. This is my first public project and thus welcome any constructive criticism or updates you can provide.
+
+Cheers!
+
+Josh Smith
