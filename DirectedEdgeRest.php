@@ -195,6 +195,42 @@ class DirectedEdgeRest
     }
     return $recommendedResults;
   }
+  
+  /**
+   * Gets multiple simultaneous recommendations from Directed Edge
+   * @param array $queryArray Array of the form array(0 => (array('item' => (string) $item, 'tags' => (string) $tags, 'limit' => (int) $limit))
+   *
+   * @return array Multi-dimensional array containing responses to
+   *  queries in the order they were passed in the array
+   */
+  public function getMultiRecommended($queryArray)
+  {
+    $targetUrls = array();
+  
+    foreach($queryArray as $query) {
+      $targeturl = self::buildURL($query['item'], 'recommended', $query['tags'], $query['limit'], 'true');
+      $targetUrls[] = $targeturl;
+    }
+    
+    $responses = self::getMultiCurlResponses($targetUrls);
+    
+    $xmlArray = array();
+    
+    foreach($responses as $response) {
+      $xmlArray[] = self::parseXML($response);      
+    }
+
+    $count =  count($xmlArray);
+    
+    // Iterate through the XML and place IDs into an array
+    for($i = 0; $i < $count; $i++) {            
+      foreach($xmlArray[$i]->item->recommended as $recommended) {
+        $recommendedResults[$i][] = filter_var($recommended, FILTER_SANITIZE_NUMBER_INT);
+      }
+    }
+    
+    return $recommendedResults;
+  }
 
   /**
    * Returns array of related result IDs for an item
@@ -208,6 +244,29 @@ class DirectedEdgeRest
   {
     // Connect to Directed Edge and parse the returned XML
     $targeturl = self::buildURL($item, 'related', $tags, $limit, 'false');
+    $response = self::getCurlResponse($targeturl);
+    $xml = self::parseXML($response);
+
+    // Iterate through the XML and place IDs into an array
+    foreach($xml->item->related as $related) {
+      $relatedResults[] = filter_var($related, FILTER_SANITIZE_NUMBER_INT);
+    }
+    return $relatedResults;
+  }
+    
+  /**
+   * Returns array of related result IDs for an item, excluding links that already exist
+   * This is what you'd use for a friend finder
+   * @param string $item Item, e.g. "Miles%20Davis"
+   * @param string $tags Tags as comma delimited string, e.g. "product,page"
+   * @param int $limit Limit for max results
+   *
+   * @return array Recommended result IDs
+   */
+  public function getRelatedExcludeLinked($item, $tags, $limit)
+  {
+    // Connect to Directed Edge and parse the returned XML
+    $targeturl = self::buildURL($item, 'related', $tags, $limit, 'true');
     $response = self::getCurlResponse($targeturl);
     $xml = self::parseXML($response);
 
@@ -296,6 +355,54 @@ class DirectedEdgeRest
     $response = curl_exec($ch);
     curl_close($ch);
     return $response;
+  }
+
+  /**
+   * Returns the cURL responses given multiple target URLs
+   * @param array $targetUrls Array of target URLs for cURL
+   *
+   * @return array cURL Responses
+   */
+  private function getMultiCurlResponses($targetUrls)
+  {
+    // Cache the count
+    $count = count($targetUrls);
+  
+    // Create the multiple cURL handles
+    for($i = 0; $i < $count; $i++) {
+      $ch[$i] = curl_init($targetUrls[$i]);
+      curl_setopt($ch[$i], CURLOPT_POST, FALSE);
+      curl_setopt($ch[$i], CURLOPT_SSL_VERIFYPEER, FALSE);
+      curl_setopt($ch[$i], CURLOPT_RETURNTRANSFER, TRUE);
+    }
+
+    // Initialize the multiple cURL handle
+    $mh = curl_multi_init();
+    
+    // Add the handles to the curl_multi handle
+    for($i = 0; $i < $count; $i++) {
+      curl_multi_add_handle($mh, $ch[$i]);
+    }
+    
+    $running=null;
+    // Execute the handles
+    do {
+      curl_multi_exec($mh,$running);
+    } while ($running > 0);
+
+    $responses = array();
+
+    // Remove the handles and return the response
+    for($i = 0; $i < $count; $i++) {
+      curl_multi_remove_handle($mh, $ch[$i]);
+      
+      $responses[$i] = curl_multi_getcontent($ch[$i]);
+    }
+
+    // Close the multiple cURL handle
+    curl_multi_close($mh);
+    
+    return $responses;
   }
 
   /**
