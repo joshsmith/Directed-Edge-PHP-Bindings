@@ -13,8 +13,8 @@ class DirectedEdgeRest
    */
   public function addItemWithTag($item_id, $tag_name)
   {
-    $xml = self::XMLForItemWithTag($item_id, $tag_name);
-    if(self::addNewItem($item_id, $xml)) {
+    $xml = $this->XMLForItemWithTag($item_id, $tag_name);
+    if($this->addNewItem($item_id, $xml)) {
       return true;
     }
   }
@@ -28,8 +28,8 @@ class DirectedEdgeRest
    */
   public function addItemWithLink($item_id, $link_name)
   {
-    $xml = self::XMLForItemWithLink($item_id, $link_name);
-    if(self::addNewItem($item_id, $xml)) {
+    $xml = $this->XMLForItemWithLink($item_id, $link_name);
+    if($this->addNewItem($item_id, $xml)) {
       return true;
     }
   }
@@ -44,8 +44,8 @@ class DirectedEdgeRest
    */
   public function addItemWithLinkAndWeight($item_id, $link_name, $weight)
   {
-    $xml = self::XMLForItemWithLinkAndWeight($item_id, $link_name, $weight);
-    if(self::addNewItem($item_id, $xml)) {
+    $xml = $this->XMLForItemWithLinkAndWeight($item_id, $link_name, $weight);
+    if($this->addNewItem($item_id, $xml)) {
       return true;
     }
   }
@@ -61,8 +61,8 @@ class DirectedEdgeRest
    */
   public function addItemWithLinkAndWeightOfType($item_id, $link_name, $weight, $type)
   {
-    $xml = self::XMLForItemWithLinkAndWeightOfType($item_id, $link_name, $weight, $type);
-    if(self::addNewItem($item_id, $xml)) {
+    $xml = $this->XMLForItemWithLinkAndWeightOfType($item_id, $link_name, $weight, $type);
+    if($this->addNewItem($item_id, $xml)) {
       return true;
     }
   }
@@ -76,8 +76,8 @@ class DirectedEdgeRest
    */
   public function updateItemWithTag($item_id, $tag_name)
   {
-    $xml = self::XMLForItemWithTag($item_id, $tag_name);
-    if(self::updateItemAdd($item_id, $xml)) {
+    $xml = $this->XMLForItemWithTag($item_id, $tag_name);
+    if($this->updateItemAdd($item_id, $xml)) {
       return true;
     }  
   }
@@ -91,8 +91,8 @@ class DirectedEdgeRest
    */
   public function updateItemWithLink($item_id, $link_name)
   {
-    $xml = self::XMLForItemWithLink($item_id, $link_name);
-    if(self::updateItemAdd($item_id, $xml)) {
+    $xml = $this->XMLForItemWithLink($item_id, $link_name);
+    if($this->updateItemAdd($item_id, $xml)) {
       return true;
     }  
   }
@@ -107,8 +107,8 @@ class DirectedEdgeRest
    */
   public function updateItemWithLinkAndWeight($item_id, $link_name, $weight)
   {
-    $xml = self::XMLForItemWithLinkAndWeight($item_id, $link_name, $weight);
-    if(self::updateItemAdd($item_id, $xml)) {
+    $xml = $this->XMLForItemWithLinkAndWeight($item_id, $link_name, $weight);
+    if($this->updateItemAdd($item_id, $xml)) {
       return true;
     }
   }
@@ -124,8 +124,8 @@ class DirectedEdgeRest
    */
   public function updateItemWithLinkAndWeightOfType($item_id, $link_name, $weight, $type)
   {
-    $xml = self::XMLForItemWithLinkAndWeightOfType($item_id, $link_name, $weight, $type);
-    if(self::updateItemAdd($item_id, $xml)) {
+    $xml = $this->XMLForItemWithLinkAndWeightOfType($item_id, $link_name, $weight, $type);
+    if($this->updateItemAdd($item_id, $xml)) {
       return true;
     }
   }
@@ -139,8 +139,8 @@ class DirectedEdgeRest
    */
   public function removeTagFromItem($item_id, $tag_name)
   {
-    $xml = self::XMLForItemWithTag($item_id, $tag_name);
-    if(self::updateItemRemove($item_id, $xml)) {
+    $xml = $this->XMLForItemWithTag($item_id, $tag_name);
+    if($this->updateItemRemove($item_id, $xml)) {
       return true;
     }
   }
@@ -154,8 +154,8 @@ class DirectedEdgeRest
    */
   public function removeLinkFromItem($item_id, $link_name)
   {
-    $xml = self::XMLForItemWithLink($item_id, $link_name);
-    if(self::updateItemRemove($item_id, $xml)) {
+    $xml = $this->XMLForItemWithLink($item_id, $link_name);
+    if($this->updateItemRemove($item_id, $xml)) {
       return true;
     }
   }
@@ -168,7 +168,7 @@ class DirectedEdgeRest
    */
   public function deleteItem($item_id)
   {
-    if(self::removeItem($item_id)) {
+    if($this->removeItem($item_id)) {
       return true;
     }
   }
@@ -184,9 +184,9 @@ class DirectedEdgeRest
   public function getRecommended($item, $tags, $limit)
   {
     // Connect to Directed Edge and parse the returned XML
-    $targeturl = self::buildURL($item, 'recommended', $tags, $limit, 'true');
-    $response = self::getCurlResponse($targeturl);
-    $xml = self::parseXML($response);
+    $targeturl = $this->buildURL($item, 'recommended', $tags, $limit, 'true');
+    $response = $this->getCurlResponse($targeturl);
+    $xml = $this->parseXML($response);
     
     // Iterate through the XML and place IDs into an array
     foreach($xml->item->recommended as $recommended) {
@@ -207,16 +207,16 @@ class DirectedEdgeRest
     $targetUrls = array();
   
     foreach($queryArray as $query) {
-      $targeturl = self::buildURL($query['item'], 'recommended', $query['tags'], $query['limit'], 'true');
+      $targeturl = $this->buildURL($query['item'], 'recommended', $query['tags'], $query['limit'], 'true');
       $targetUrls[] = $targeturl;
     }
     
-    $responses = self::getMultiCurlResponses($targetUrls);
+    $responses = $this->getMultiCurlResponses($targetUrls);
     
     $xmlArray = array();
     
     foreach($responses as $response) {
-      $xmlArray[] = self::parseXML($response);      
+      $xmlArray[] = $this->parseXML($response);      
     }
 
     $count =  count($xmlArray);
@@ -242,9 +242,9 @@ class DirectedEdgeRest
   public function getRelated($item, $tags, $limit)
   {
     // Connect to Directed Edge and parse the returned XML
-    $targeturl = self::buildURL($item, 'related', $tags, $limit, 'false');
-    $response = self::getCurlResponse($targeturl);
-    $xml = self::parseXML($response);
+    $targeturl = $this->buildURL($item, 'related', $tags, $limit, 'false');
+    $response = $this->getCurlResponse($targeturl);
+    $xml = $this->parseXML($response);
 
     // Iterate through the XML and place IDs into an array
     foreach($xml->item->related as $related) {
@@ -265,9 +265,9 @@ class DirectedEdgeRest
   public function getRelatedExcludeLinked($item, $tags, $limit)
   {
     // Connect to Directed Edge and parse the returned XML
-    $targeturl = self::buildURL($item, 'related', $tags, $limit, 'true');
-    $response = self::getCurlResponse($targeturl);
-    $xml = self::parseXML($response);
+    $targeturl = $this->buildURL($item, 'related', $tags, $limit, 'true');
+    $response = $this->getCurlResponse($targeturl);
+    $xml = $this->parseXML($response);
 
     // Iterate through the XML and place IDs into an array
     foreach($xml->item->related as $related) {
@@ -511,8 +511,8 @@ class DirectedEdgeRest
    */
   private function XMLForItemWithTag($item_id, $tag_name)
   {
-    self::createNewDOMDocument();
-    $item = self::createItemElement($item_id);
+    $this->createNewDOMDocument();
+    $item = $this->createItemElement($item_id);
     
     $tag = $this->doc->createElement("tag"); 
     $tag->appendChild($this->doc->createTextNode($tag_name)); 
@@ -533,8 +533,8 @@ class DirectedEdgeRest
    */
   private function XMLForItemWithLink($item_id, $link_name)
   {
-    self::createNewDOMDocument();
-    $item = self::createItemElement($item_id);
+    $this->createNewDOMDocument();
+    $item = $this->createItemElement($item_id);
 
     $link = $this->doc->createElement("link");
     $link->appendChild($this->doc->createTextNode($link_name));
@@ -556,8 +556,8 @@ class DirectedEdgeRest
    */  
   private function XMLForItemWithLinkAndWeight($item_id, $link_name, $weight)
   {
-    self::createNewDOMDocument();
-    $item = self::createItemElement($item_id);
+    $this->createNewDOMDocument();
+    $item = $this->createItemElement($item_id);
 
     $link = $this->doc->createElement("link");
     $link->appendChild($this->doc->createTextNode($link_name));
@@ -587,8 +587,8 @@ class DirectedEdgeRest
    */  
   private function XMLForItemWithLinkAndWeightOfType($item_id, $link_name, $weight, $type)
   {
-    self::createNewDOMDocument();
-    $item = self::createItemElement($item_id);
+    $this->createNewDOMDocument();
+    $item = $this->createItemElement($item_id);
 
     $link = $this->doc->createElement("link");
     $link->appendChild($this->doc->createTextNode($link_name));
@@ -623,8 +623,8 @@ class DirectedEdgeRest
    */
   private function XMLForRemoveLink($item_id, $link_name)
   {
-    self::createNewDOMDocument();
-    $item = self::createItemElement($item_id);
+    $this->createNewDOMDocument();
+    $item = $this->createItemElement($item_id);
 
     $link = $this->doc->createElement("link");
     $link->appendChild($this->doc->createTextNode($link_name));
@@ -645,8 +645,8 @@ class DirectedEdgeRest
    */
   private function addNewItem($item_id, $xml)
   {
-    $targeturl = self::buildAddURL($item_id);  
-    if(self::importCurlXML($targeturl, $xml)) {
+    $targeturl = $this->buildAddURL($item_id);  
+    if($this->importCurlXML($targeturl, $xml)) {
       return true;
     }
   }
@@ -660,8 +660,8 @@ class DirectedEdgeRest
    */
   private function updateItemAdd($item_id, $xml)
   {
-    $targeturl = self::buildUpdateURL($item_id, 'add');  
-    if(self::importCurlXML($targeturl, $xml)) {
+    $targeturl = $this->buildUpdateURL($item_id, 'add');  
+    if($this->importCurlXML($targeturl, $xml)) {
       return true;
     }
   }
@@ -675,8 +675,8 @@ class DirectedEdgeRest
    */
   private function updateItemRemove($item_id, $xml)
   {
-    $targeturl = self::buildUpdateURL($item_id, 'remove');  
-    if(self::importCurlXML($targeturl, $xml)) {
+    $targeturl = $this->buildUpdateURL($item_id, 'remove');  
+    if($this->importCurlXML($targeturl, $xml)) {
       return true;
     }
   }
@@ -689,8 +689,8 @@ class DirectedEdgeRest
    */
   private function removeItem($item_id)
   {
-    $targeturl = self::buildRemoveURL($item_id);  
-    if(self::deleteCurl($targeturl)) {
+    $targeturl = $this->buildRemoveURL($item_id);  
+    if($this->deleteCurl($targeturl)) {
       return true;
     }
   }
