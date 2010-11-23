@@ -1,5 +1,24 @@
-This isn't much of a README yet.
+What is Directed Edge?
+----------------------
+Directed Edge (http://directededge.com) helps you find related stuff.
 
+It's a recommendations engine that plugs into your site to deliver Amazon-like recommendations. You can show your users personalized recommendations and similar content or products based on data you're already collecting.
+
+
+What are these bindings?
+------------------------
+These bindings are used on Goals.com, but have been abstracted to be useful for any PHP developers interacting with Directed Edge's REST API. They do not rely on any particular RDBMS.
+
+The bindings handle:
+- writing to Directed Edge
+- fetching recommendations from Directed Edge
+- parsing XML returned by Directed Edge
+
+For complex applications that would like to return multiple recommendation groupings from Directed Edge simultaneously with little overhead and lower latency, these bindings also feature the usage of PHP's curl_multi() for parallel streaming.
+
+
+Getting Started
+---------------
 First, you're just going to want to set the global variables in config.php to your Directed Edge username and password.
 
 After that, take a look through the functions in DirectedEdgeRest.php. The majority of the file is made up of private functions that handle, among other things, cURL, XML parsing/traversal, and XML writing.
@@ -8,6 +27,9 @@ The public functions are your interface to the API. They're intended to be abstr
 
 The bindings were built to be used with any database, but follows the general framework laid out in Directed Edge's own documentation. IDs are used and prefixed by an identifying word, e.g. "user1". You can, however, use whatever works for you and feel free to modify to your own needs.
 
+
+Contributing
+------------
 Please do get in touch if you'd like to contribute to this. This is my first public project and thus welcome any constructive criticism or updates you can provide.
 
 Cheers!

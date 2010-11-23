@@ -172,7 +172,6 @@ class DirectedEdgeRest
       return true;
     }
   }
-  
     
   /**
    * Returns array of recommended result IDs for an item
@@ -384,10 +383,10 @@ class DirectedEdgeRest
       curl_multi_add_handle($mh, $ch[$i]);
     }
     
-    $running=null;
+    $running = null;
     // Execute the handles
     do {
-      curl_multi_exec($mh,$running);
+      curl_multi_exec($mh, $running);
     } while ($running > 0);
 
     $responses = array();
